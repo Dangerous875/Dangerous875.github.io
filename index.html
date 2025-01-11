@@ -3,78 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="Aplicación Kotlin Multiplatform que utiliza JavaScript y WebAssembly para una experiencia moderna y fluida.">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Barzabal Cristian Profile</title>
-    <link rel="icon" href="drawable/favkotlin_icon.png" type="image/png">
-    <script type="application/javascript" src="skiko.js"></script>
-    <script type="application/javascript" src="composeApp.js"></script>
+<!--    <link rel="icon" href="drawable/favkotlin_icon.png" type="image/png">-->
+    <link rel="stylesheet" href="styles.css">
+    <script src="skiko.js" defer></script>
+    <script src="composeApp.js" defer></script>
     <style>
+        /* Global Styles */
         html, body {
-            width: 100%;
-            height: 100%;
             margin: 0;
             padding: 0;
+            width: 100%;
+            height: 100%;
             background-color: white;
             overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        /* Safe Area Insets for iOS */
+        body {
             padding-top: env(safe-area-inset-top);
             padding-bottom: env(safe-area-inset-bottom);
             padding-left: env(safe-area-inset-left);
             padding-right: env(safe-area-inset-right);
-            box-sizing: border-box;
         }
 
         canvas {
             display: block;
-            width: 100vw;
+            width: 100%;
             height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
         }
 
+        /* Warning Section */
         #warning {
             position: absolute;
-            top: 100px;
-            left: 100px;
-            max-width: 830px;
-            z-index: 100;
-            background-color: white;
-            font-size: initial;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 600px;
+            padding: 20px;
+            background-color: #ffdddd;
+            color: #333;
+            border: 1px solid #ff8888;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: Arial, sans-serif;
+            text-align: center;
             display: none;
+            z-index: 100;
         }
 
-        #warning li {
-            padding-bottom: 15px;
+        #warning ul {
+            padding: 0;
+            margin: 10px 0;
+            list-style-type: none;
         }
 
-        #warning span.code {
-            font-family: monospace;
+        #warning ul li {
+            margin: 5px 0;
         }
 
-        ul {
-            margin-top: 0;
-            margin-bottom: 15px;
-        }
-
-        #footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            z-index: 1000;
-            background-color: white;
-            font-size: initial;
-        }
-
-        #close {
-            position: absolute;
-            top: 0;
-            right: 10px;
+        #warning .close-btn {
+            margin-top: 10px;
             cursor: pointer;
+            background-color: #ff8888;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-size: 0.9rem;
+        }
+
+        #warning .close-btn:hover {
+            background-color: #ff6666;
         }
     </style>
 </head>
 <body>
-<div>
-    <canvas id="ComposeTarget"></canvas>
+<!-- Main Content -->
+<canvas id="ComposeTarget"></canvas>
+
+<!-- Warning Section -->
+<div id="warning">
+    <p><strong>⚠️ Error:</strong> WebAssembly no es compatible con este dispositivo o navegador.</p>
+    <ul>
+        <li>Asegúrate de usar un navegador moderno como Chrome, Firefox o Safari.</li>
+        <li>Actualiza tu navegador a la última versión.</li>
+    </ul>
+    <button class="close-btn" onclick="document.getElementById('warning').style.display='none';">Cerrar</button>
 </div>
 
-<script type="application/javascript">
+<script>
+    // Detect device and apply padding for safe area (iOS/Android)
     const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
     const isAndroid = /Android/i.test(navigator.userAgent);
 
@@ -83,20 +108,27 @@
     }
 
     if (isAndroid) {
-        document.body.style.paddingTop = '0px'; // Ajusta este valor si es necesario.
+        document.body.style.paddingTop = '0px';
     }
 
+    // Handle WebAssembly Errors
     const unhandledError = (event, error) => {
         if (error instanceof WebAssembly.CompileError) {
-            document.getElementById("warning").style.display = "initial";
+            const warningElement = document.getElementById("warning");
+            if (warningElement) {
+                warningElement.style.display = "block";
+            }
 
-            // Hide a Scary Webpack Overlay which is less informative in this case.
+            // Hide a potential Webpack overlay (if present)
             const webpackOverlay = document.getElementById("webpack-dev-server-client-overlay");
-            if (webpackOverlay != null) webpackOverlay.style.display = "none";
+            if (webpackOverlay) {
+                webpackOverlay.style.display = "none";
+            }
         }
     };
-    addEventListener("error", (event) => unhandledError(event, event.error));
-    addEventListener("unhandledrejection", (event) => unhandledError(event, event.reason));
+
+    window.addEventListener("error", (event) => unhandledError(event, event.error));
+    window.addEventListener("unhandledrejection", (event) => unhandledError(event, event.reason));
 </script>
 </body>
 </html>
